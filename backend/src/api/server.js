@@ -12,6 +12,7 @@ const rotasEstoque = require('./rotas/estoque');
 const rotasPedidos = require('./rotas/pedidos');
 const rotasPagamentos = require('./rotas/pagamentos');
 const rotasAuditoria = require('./rotas/auditoria');
+const rotasFidelidade = require('./rotas/fidelidade');
 
 const app = express();
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use('/estoque', rotasEstoque);
 app.use('/pedidos', rotasPedidos);
 app.use('/pagamentos', rotasPagamentos);
 app.use('/auditoria', rotasAuditoria);
+app.use('/fidelidade', rotasFidelidade);
 
 app.use((req, res) => {
   enviarErro(req, res, 404, 'ROTA_NAO_ENCONTRADA', 'Rota não encontrada.');

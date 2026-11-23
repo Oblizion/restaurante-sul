@@ -2,6 +2,7 @@ const sequelize = require('../dados/database');
 const { Pedido, ItemPedido, Estoque } = require('../dados/modelos');
 const ErroNegocio = require('./errorNegocio');
 const auditoria = require('./auditoria');
+const fidelidadeServico = require('./fidelidadeServico');
 
 // de qual status para quais é permitido ir
 // (EM_PREPARO só é alcançado pelo pagamento aprovado, nunca à mão)
@@ -73,6 +74,11 @@ async function atualizar(usuarioLogado, id, dados) {
     const statusAnterior = pedido.status;
     pedido.status = novoStatus;
     await pedido.save({ transaction: t });
+
+    // pedido entregue gera pontos de fidelidade (se o cliente aceitou o programa)
+    if (novoStatus === 'ENTREGUE') {
+      await fidelidadeServico.acumular(pedido, usuarioLogado.id, t);
+    }
 
     await auditoria.registrar(usuarioLogado.id, 'STATUS_' + statusAnterior + '_PARA_' + novoStatus,
       'Pedido', pedido.id, t);

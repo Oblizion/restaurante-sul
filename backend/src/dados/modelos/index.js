@@ -6,6 +6,7 @@ const Pedido = require('./pedido');
 const ItemPedido = require('./itemPedido');
 const Pagamento = require('./pagamento');
 const LogAuditoria = require('./logAuditoria');
+const MovimentoFidelidade = require('./movimentoFidelidade');
 
 Unidade.hasMany(Estoque, { foreignKey: 'unidadeId' });
 Estoque.belongsTo(Unidade, { foreignKey: 'unidadeId' });
@@ -31,7 +32,14 @@ Pagamento.belongsTo(Pedido, { foreignKey: 'pedidoId' });
 Usuario.hasMany(LogAuditoria, { foreignKey: 'usuarioId' });
 LogAuditoria.belongsTo(Usuario, { foreignKey: 'usuarioId' });
 
+Usuario.hasMany(MovimentoFidelidade, { foreignKey: 'clienteId' });
+MovimentoFidelidade.belongsTo(Usuario, { foreignKey: 'clienteId' });
+
+Pedido.hasMany(MovimentoFidelidade, { foreignKey: 'pedidoId' });
+MovimentoFidelidade.belongsTo(Pedido, { foreignKey: 'pedidoId' });
+
 module.exports = {
   Usuario, Unidade, Produto, Estoque,
-  Pedido, ItemPedido, Pagamento, LogAuditoria
+  Pedido, ItemPedido, Pagamento, LogAuditoria,
+  MovimentoFidelidade
 };

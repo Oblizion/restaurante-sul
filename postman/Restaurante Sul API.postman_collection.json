@@ -954,6 +954,59 @@
       "name": "04 - Pedidos",
       "item": [
         {
+          "name": "Cliente aceita o programa de fidelidade (+)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/consentimento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "consentimento"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aceito\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Consentimento registrado\", function () { pm.expect(pm.response.json().aceitaFidelidade).to.eql(true); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Criar pedido canal APP (+)",
           "request": {
             "method": "POST",
@@ -1901,6 +1954,351 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - Fidelidade",
+      "item": [
+        {
+          "name": "Consultar saldo de pontos (+)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/saldo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "saldo"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Pedido entregue gerou pontos\", function () { pm.expect(pm.response.json().saldo).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resgatar 5 pontos (+)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/resgatar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "resgatar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pontos\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resgatar mais pontos que o saldo - 409 (-)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/resgatar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "resgatar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pontos\": 9999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Código de erro SALDO_INSUFICIENTE\", function () { pm.expect(pm.response.json().error).to.eql(\"SALDO_INSUFICIENTE\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resgatar quantidade inválida - 422 (-)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/resgatar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "resgatar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pontos\": -5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });",
+                  "pm.test(\"Código de erro DADOS_INVALIDOS\", function () { pm.expect(pm.response.json().error).to.eql(\"DADOS_INVALIDOS\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Gerente tenta acessar fidelidade - 403 (-)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/saldo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "saldo"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_gerente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cliente sai do programa (+)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/consentimento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "consentimento"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aceito\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resgatar sem consentimento - 403 (-)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fidelidade/resgatar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fidelidade",
+                "resgatar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pontos\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Código de erro CONSENTIMENTO_FIDELIDADE_NECESSARIO\", function () { pm.expect(pm.response.json().error).to.eql(\"CONSENTIMENTO_FIDELIDADE_NECESSARIO\"); });"
                 ]
               }
             }
