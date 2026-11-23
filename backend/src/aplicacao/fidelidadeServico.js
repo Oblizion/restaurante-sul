@@ -3,10 +3,8 @@ const { Usuario, MovimentoFidelidade } = require('../dados/modelos');
 const ErroNegocio = require('./errorNegocio');
 const auditoria = require('./auditoria');
 
-// Regras do programa (descritas em docs/regras-de-negocio.md)
-const REAIS_POR_PONTO = 10;        // 1 ponto a cada R$ 10 em pedido entregue
-const MULTIPLICADOR_APP = 2;       // promoção: pedido pelo APP vale pontos em dobro
-const REAIS_POR_PONTO_RESGATADO = 0.10; // cada ponto resgatado vale R$ 0,10
+// as regras de pontos e resgate ficam em dominio/fidelidade.js
+const regras = require('../dominio/fidelidade');
 
 async function calcularSaldo(clienteId, transacao) {
   const soma = await MovimentoFidelidade.sum('pontos', {
@@ -24,10 +22,7 @@ async function acumular(pedido, atorId, transacao) {
     return null;
   }
 
-  let pontos = Math.floor(Number(pedido.total) / REAIS_POR_PONTO);
-  if (pedido.canalPedido === 'APP') {
-    pontos = pontos * MULTIPLICADOR_APP;
-  }
+  const pontos = regras.calcularPontos(Number(pedido.total), pedido.canalPedido);
   if (pontos <= 0) {
     return null;
   }
@@ -117,7 +112,7 @@ async function resgatar(usuarioLogado, dados) {
 
     return {
       pontosResgatados: pontos,
-      descontoReais: Math.round(pontos * REAIS_POR_PONTO_RESGATADO * 100) / 100,
+      descontoReais: regras.calcularDescontoReais(pontos),
       saldo: saldo - pontos
     };
   });

@@ -3,30 +3,16 @@ const { Pedido, ItemPedido, Estoque } = require('../dados/modelos');
 const ErroNegocio = require('./errorNegocio');
 const auditoria = require('./auditoria');
 const fidelidadeServico = require('./fidelidadeServico');
+const { STATUS, podeMudarStatus, perfisQuePodemMudarPara } = require('../dominio/pedido');
 
-// de qual status para quais é permitido ir
-// (EM_PREPARO só é alcançado pelo pagamento aprovado, nunca à mão)
-const TRANSICOES = {
-  AGUARDANDO_PAGAMENTO: ['CANCELADO'],
-  EM_PREPARO: ['PRONTO', 'CANCELADO'],
-  PRONTO: ['ENTREGUE'],
-  ENTREGUE: [],
-  CANCELADO: []
-};
-
-// quem pode mudar para cada status
-const PERMISSOES = {
-  PRONTO: ['COZINHA', 'GERENTE'],
-  ENTREGUE: ['ATENDENTE', 'GERENTE'],
-  CANCELADO: ['CLIENTE', 'ATENDENTE', 'GERENTE']
-};
+// as regras de transição e de permissão ficam em dominio/pedido.js
 
 async function atualizar(usuarioLogado, id, dados) {
   const novoStatus = dados.status;
 
-  if (!Object.keys(TRANSICOES).includes(novoStatus)) {
+  if (!STATUS.includes(novoStatus)) {
     throw new ErroNegocio(422, 'DADOS_INVALIDOS', 'Status inválido.', [
-      { field: 'status', issue: 'Use um destes valores: ' + Object.keys(TRANSICOES).join(', ') }
+      { field: 'status', issue: 'Use um destes valores: ' + STATUS.join(', ') }
     ]);
   }
 
@@ -35,12 +21,12 @@ async function atualizar(usuarioLogado, id, dados) {
     throw new ErroNegocio(404, 'PEDIDO_NAO_ENCONTRADO', 'Pedido não encontrado.');
   }
 
-  if (!TRANSICOES[pedido.status].includes(novoStatus)) {
+  if (!podeMudarStatus(pedido.status, novoStatus)) {
     throw new ErroNegocio(409, 'TRANSICAO_INVALIDA',
       'Não é possível mudar de ' + pedido.status + ' para ' + novoStatus + '.');
   }
 
-  const perfisPermitidos = PERMISSOES[novoStatus] || [];
+  const perfisPermitidos = perfisQuePodemMudarPara(novoStatus);
   if (!perfisPermitidos.includes(usuarioLogado.perfil)) {
     throw new ErroNegocio(403, 'ACESSO_NEGADO', 'Seu perfil não pode colocar o pedido neste status.');
   }

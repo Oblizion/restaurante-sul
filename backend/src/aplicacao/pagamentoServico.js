@@ -4,8 +4,7 @@ const { Pedido, Pagamento } = require('../dados/modelos');
 const ErroNegocio = require('./errorNegocio');
 const auditoria = require('./auditoria');
 
-const FORMAS = ['PIX', 'CARTAO', 'MOCK'];
-const SIMULACOES = ['APROVADO', 'RECUSADO', 'FALHA'];
+const { FORMAS, SIMULACOES } = require('../dominio/pagamento');
 
 async function pagar(usuarioLogado, dados) {
   const { pedidoId, formaPagamento } = dados;

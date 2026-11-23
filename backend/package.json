@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nodemon src/api/server.js",
     "start": "node src/api/server.js",
+    "test": "node --test",
     "semente": "node src/dados/semente.js"
   },
   "dependencies": {

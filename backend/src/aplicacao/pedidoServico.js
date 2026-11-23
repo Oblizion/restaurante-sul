@@ -4,8 +4,7 @@ const ErroNegocio = require('./errorNegocio');
 const lerPaginacao = require('./paginacao');
 const auditoria = require('./auditoria');
 
-const CANAIS = ['APP', 'TOTEM', 'BALCAO', 'PICKUP', 'WEB'];
-const STATUS = ['AGUARDANDO_PAGAMENTO', 'EM_PREPARO', 'PRONTO', 'ENTREGUE', 'CANCELADO'];
+const { CANAIS, STATUS } = require('../dominio/pedido');
 
 function resumoDoPedido(pedido) {
   return {
