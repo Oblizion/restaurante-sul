@@ -13,9 +13,15 @@ const rotasPedidos = require('./rotas/pedidos');
 const rotasPagamentos = require('./rotas/pagamentos');
 const rotasAuditoria = require('./rotas/auditoria');
 const rotasFidelidade = require('./rotas/fidelidade');
+const swaggerUi = require('swagger-ui-express');
+const documentacao = require('./swagger');
 
 const app = express();
 app.use(express.json());
+
+// documentação da API
+app.get('/docs.json', (req, res) => res.json(documentacao));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(documentacao));
 
 app.get('/status', (req, res) => {
   res.json({ status: 'ok' });
