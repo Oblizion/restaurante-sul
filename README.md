@@ -76,7 +76,7 @@ npm test
 
 Na pasta `postman` tem dois arquivos:
 
-- `Restaurante Sul API.postman_collection.json`: a coleção, com 41 requisições e 69 validações automáticas
+- `Restaurante Sul API.postman_collection.json`: a coleção, com 41 requisições e 51 validações automáticas (29 positivas e 22 negativas)
 - `Local.postman_environment.json`: o ambiente, que já traz o `base_url`
 
 Para rodar:
